@@ -1,6 +1,8 @@
 import express from "express";
 import { ipLogger } from "./ipLogger.js";
 import { dateLogger } from "./dateLogger.js";
+import fs, { access } from "fs";
+
 
 let data = [{
     src:"https://ik.imagekit.io/awwybhhmo/satellite_images/chinese/beyondmenu/hero/2.jpg?tr=w-3840,q-50",
@@ -105,6 +107,20 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({extended:false}));
+
+app.use((req, res, next) => {
+    const start = Date.now();
+    
+    res.on('finish', () => {
+      const end = Date.now();
+      const duration = end - start;
+      fs.appendFile("access.log", " - " +duration + "ms" + "\n", (err) => {
+        if (err) console.log("Date could not be added to access log");
+      });
+    });
+  
+    next();
+  });
 
 
 app.use(ipLogger);
